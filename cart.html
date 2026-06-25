@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your Cart</title>
+    <link rel="icon" type="image/png" href="icon/32.png" />
+    <link rel="apple-touch-icon" href="icon/180.png" />
+    <style>
+      :root {
+        --header-height: 50px;
+        --accent-color: #000000;
+        --sidebar-width: 280px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 0; padding-top: var(--header-height); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; color: #333; -webkit-font-smoothing: antialiased; padding-bottom: 140px;
+      }
+
+      /* HEADER */
+      .site-header {
+        position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background-color: #000; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      .header-left, .header-right { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 700; }
+      .header-title { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
+
+      /* CONTAINER & CARDS */
+      #capture-area { max-width: 800px; margin: 0 auto; padding: 15px 10px; }
+      .cart-items-list { display: flex; flex-direction: column; gap: 10px; list-style: none; padding: 0; margin: 0; }
+      .cart-item {
+        background: #fff; padding: 12px; display: flex; align-items: center; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.02);
+      }
+      .cart-item-img { width: 60px; height: 60px; object-fit: contain; background: #fbfbfd; border-radius: 8px; margin-right: 15px; }
+      .item-content { flex-grow: 1; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+      .item-title { font-size: 0.95rem; font-weight: 600; margin: 0; color: #1d1d1f; }
+      
+      /* CONTROLS */
+      .right-box { display: flex; align-items: center; gap: 15px; }
+      .qty-wrapper { display: flex; background: #f2f2f7; border-radius: 10px; padding: 2px; align-items: center; }
+      .qty-btn { background: #fff; border: 0.5px solid rgba(0,0,0,0.04); width: 28px; height: 28px; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+      .qty-display { width: 35px; text-align: center; font-size: 0.95rem; font-weight: 600; }
+      .remove-btn-icon { background: none; border: none; color: #ff3b30; font-size: 1.4rem; cursor: pointer; padding: 5px; }
+
+      /* PREVIEW BOX */
+      .preview-section { margin-top: 20px; background: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.02); }
+      .preview-title { font-size: 0.85rem; font-weight: 700; color: #86868b; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+      #order-preview-text { width: 100%; height: 120px; padding: 12px; border: 1px solid #e5e5ea; border-radius: 10px; font-family: monospace; font-size: 0.9rem; resize: none; background: #fbfbfd; outline: none; color: #1d1d1f; }
+
+      /* FIXED ACTIONS BAR */
+      .cart-actions { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); padding: 15px 20px 25px; display: flex; gap: 12px; border-top: 1px solid rgba(0,0,0,0.08); z-index: 100; }
+      .action-btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-transform: uppercase; }
+      .btn-clear { background: #fff; color: #ff3b30; border: 1px solid #e5e5ea; flex: 0.4; }
+      .btn-order { background: #1d1d1f; color: #fff; }
+
+      .empty-state { text-align: center; padding: 60px 20px; color: #86868b; }
+      .btn-continue { display: inline-block; margin-top: 15px; background: #1d1d1f; color: #fff; padding: 10px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-left" onclick="window.location.href='index.html'">
+        <span>◀ BACK</span>
+      </div>
+      <div class="header-title">SELECTED ITEMS</div>
+      <div class="header-right" style="opacity:0; pointer-events:none;"><span></span></div>
+    </header>
+
+    <div id="capture-area">
+      <ul id="cart-items-list" class="cart-items-list"></ul>
+
+      <div id="preview-box" class="preview-section" style="display: none">
+        <div class="preview-title">📋 Order Content Preview:</div>
+        <textarea id="order-preview-text" readonly></textarea>
+      </div>
+    </div>
+
+    <div class="cart-actions" id="actions-bar" style="display: none">
+      <button id="clear-cart-btn" class="action-btn btn-clear">Clear</button>
+      <button id="send-order-btn" class="action-btn btn-order">Copy Order</button>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+      const cartItemsList = document.getElementById("cart-items-list");
+      const clearCartBtn = document.getElementById("clear-cart-btn");
+      const sendOrderBtn = document.getElementById("send-order-btn");
+      const previewBox = document.getElementById("preview-box");
+      const previewTextarea = document.getElementById("order-preview-text");
+      const actionsBar = document.getElementById("actions-bar");
+
+      function loadCart() {
+        return JSON.parse(localStorage.getItem("perfumeCart") || "[]");
+      }
+      function saveCart(cart) {
+        localStorage.setItem("perfumeCart", JSON.stringify(cart));
+      }
+
+      function renderCart() {
+        const cart = loadCart();
+        cartItemsList.innerHTML = "";
+
+        if (cart.length === 0) {
+          cartItemsList.innerHTML = `
+            <div class="empty-state">
+                <p style="font-size:1.1rem; margin:0;">Your list is empty.</p>
+                <a href="index.html" class="btn-continue">Go to Products</a>
+            </div>
+          `;
+          previewBox.style.display = "none";
+          actionsBar.style.display = "none";
+          return;
+        }
+
+        previewBox.style.display = "block";
+        actionsBar.style.display = "flex";
+
+        cart.forEach((item, index) => {
+          const displayTitle = item.caption || item.name;
+          const li = document.createElement("li");
+          li.className = "cart-item";
+          li.innerHTML = `
+                <img src="${item.img}" class="cart-item-img" alt="Product">
+                <div class="item-content">
+                    <p class="item-title">${displayTitle}</p>
+                    <div class="right-box">
+                        <div class="qty-wrapper">
+                            <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                            <div class="qty-display">${item.quantity}</div>
+                            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                        </div>
+                        <button class="remove-btn-icon" onclick="removeItem(${index})">&times;</button>
+                    </div>
+                </div>
+            `;
+          cartItemsList.appendChild(li);
+        });
+
+        // 实时更新剪贴板文本框的内容
+        updateTextPreview(cart);
+      }
+
+      function updateTextPreview(cart) {
+        if (previewTextarea) {
+          // 🟢 只提取最无杂质、最干净的 编号/名字*数量 格式
+          previewTextarea.value = cart.map(i => `${i.sku || i.name}*${i.quantity}`).join("\n");
+        }
+      }
+
+      window.updateQty = (index, change) => {
+        const cart = loadCart();
+        if (cart[index]) {
+          cart[index].quantity += change;
+          if (cart[index].quantity <= 0) cart.splice(index, 1);
+          saveCart(cart);
+          renderCart();
+        }
+      };
+
+      window.removeItem = (index) => {
+        const cart = loadCart();
+        cart.splice(index, 1);
+        saveCart(cart);
+        renderCart();
+      };
+
+      clearCartBtn.onclick = () => {
+        localStorage.removeItem("perfumeCart");
+        renderCart();
+      };
+
+      // 🟢 点击直接复制，不再发送消息
+      sendOrderBtn.onclick = () => {
+        if (previewTextarea && previewTextarea.value) {
+          navigator.clipboard.writeText(previewTextarea.value).then(() => {
+            alert("Order copied to clipboard successfully! 📋");
+          }).catch(err => {
+            // 兼容部分旧浏览器的硬拷贝兜底
+            previewTextarea.select();
+            document.execCommand("copy");
+            alert("Order copied! 📋");
+          });
+        }
+      };
+
+      document.addEventListener("DOMContentLoaded", renderCart);
+    </script>
+  </body>
+</html>
