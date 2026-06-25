@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Selected Items</title>
+    <title>Selection List</title>
     <link rel="icon" type="image/png" href="icon/32.png" />
     <link rel="apple-touch-icon" href="icon/180.png" />
     <style>
@@ -25,26 +25,27 @@
       .header-title { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
 
       /* CONTAINER & CARDS */
-      #capture-area { max-width: 800px; margin: 0 auto; padding: 15px 10px; }
-      .cart-items-list { display: flex; flex-direction: column; gap: 10px; list-style: none; padding: 0; margin: 0; }
+      #capture-area { max-width: 1100px; margin: 0 auto; padding: 15px 10px; }
+      .cart-items-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; list-style: none; padding: 0; margin: 0; }
       .cart-item {
-        background: #fff; padding: 12px; display: flex; align-items: center; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.02);
+        background: #fff; padding: 15px; display: flex; align-items: center; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.02); height: 100%;
       }
-      .cart-item-img { width: 60px; height: 60px; object-fit: contain; background: #fbfbfd; border-radius: 8px; margin-right: 15px; }
-      .item-content { flex-grow: 1; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+      .cart-item-img { width: 60px; height: 60px; object-fit: contain; background: #fbfbfd; border-radius: 8px; margin-right: 15px; flex-shrink: 0; }
+      .item-content { flex-grow: 1; display: flex; align-items: center; justify-content: space-between; gap: 15px; width: 100%; }
       .item-title { font-size: 0.95rem; font-weight: 600; margin: 0; color: #1d1d1f; }
       
       /* CONTROLS */
-      .right-box { display: flex; align-items: center; gap: 15px; }
+      .right-box { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
       .qty-wrapper { display: flex; background: #f2f2f7; border-radius: 10px; padding: 2px; align-items: center; }
       .qty-btn { background: #fff; border: 0.5px solid rgba(0,0,0,0.04); width: 28px; height: 28px; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
       .qty-display { width: 35px; text-align: center; font-size: 0.95rem; font-weight: 600; }
       .remove-btn-icon { background: none; border: none; color: #ff3b30; font-size: 1.4rem; cursor: pointer; padding: 5px; }
 
-      /* PREVIEW BOX */
-      .preview-section { margin-top: 20px; background: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.02); }
-      .preview-title { font-size: 0.85rem; font-weight: 700; color: #86868b; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-      #order-preview-text { width: 100%; height: 120px; padding: 12px; border: 1px solid #e5e5ea; border-radius: 10px; font-family: monospace; font-size: 0.9rem; resize: none; background: #fbfbfd; outline: none; color: #1d1d1f; }
+      /* SUMMARY BOX */
+      .cart-summary { background: #fff; padding: 20px; margin-top: 20px; width: 100%; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.02); }
+      .cart-summary h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+      .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; color: #555; }
+      .summary-total { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; font-weight: bold; font-size: 1.1rem; color: #000; }
 
       /* FIXED ACTIONS BAR */
       .cart-actions { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); padding: 15px 20px 25px; display: flex; gap: 12px; border-top: 1px solid rgba(0,0,0,0.08); z-index: 100; }
@@ -52,7 +53,7 @@
       .btn-clear { background: #fff; color: #ff3b30; border: 1px solid #e5e5ea; flex: 0.4; }
       .btn-order { background: #1d1d1f; color: #fff; }
 
-      .empty-state { text-align: center; padding: 60px 20px; color: #86868b; }
+      .empty-state { text-align: center; padding: 60px 20px; color: #86868b; width: 100%; }
       .btn-continue { display: inline-block; margin-top: 15px; background: #1d1d1f; color: #fff; padding: 10px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; }
     </style>
   </head>
@@ -61,31 +62,45 @@
       <div class="header-left" onclick="window.location.href='index.html'">
         <span>◀ BACK</span>
       </div>
-      <div class="header-title">SELECTED ITEMS</div>
+      <div class="header-title">SELECTION LIST</div>
       <div style="opacity:0; pointer-events:none;"><span></span></div>
     </header>
 
     <div id="capture-area">
       <ul id="cart-items-list" class="cart-items-list"></ul>
 
-      <div id="preview-box" class="preview-section" style="display: none">
-        <div class="preview-title">📋 Summary Copy Column:</div>
-        <textarea id="order-preview-text" readonly></textarea>
+      <div id="cart-summary" class="cart-summary" style="display: none">
+        <h2>List Summary</h2>
+        <div class="summary-row">
+          <span>Louis Vuitton</span>
+          <span id="lv-count">0</span>
+        </div>
+        <div class="summary-row">
+          <span>Other Brands</span>
+          <span id="other-brands-count">0</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span>Total Quantity</span>
+          <span id="total-qty-display">0 items</span>
+        </div>
       </div>
     </div>
 
     <div class="cart-actions" id="actions-bar" style="display: none">
       <button id="clear-cart-btn" class="action-btn btn-clear">Clear</button>
-      <button id="send-order-btn" class="action-btn btn-order">Copy Order</button>
+      <button id="send-order-btn" class="action-btn btn-order">Copy List</button>
     </div>
 
     <script>
       const cartItemsList = document.getElementById("cart-items-list");
       const clearCartBtn = document.getElementById("clear-cart-btn");
       const sendOrderBtn = document.getElementById("send-order-btn");
-      const previewBox = document.getElementById("preview-box");
-      const previewTextarea = document.getElementById("order-preview-text");
+      const cartSummary = document.getElementById("cart-summary");
       const actionsBar = document.getElementById("actions-bar");
+      
+      const lvCountEl = document.getElementById("lv-count");
+      const otherCountEl = document.getElementById("other-brands-count");
+      const totalQtyEl = document.getElementById("total-qty-display");
 
       function loadCart() {
         return JSON.parse(localStorage.getItem("perfumeCart") || "[]");
@@ -105,15 +120,26 @@
                 <a href="index.html" class="btn-continue">Go to Products</a>
             </div>
           `;
-          previewBox.style.display = "none";
+          cartSummary.style.display = "none";
           actionsBar.style.display = "none";
           return;
         }
 
-        previewBox.style.display = "block";
+        cartSummary.style.display = "block";
         actionsBar.style.display = "flex";
 
+        let totalQty = 0;
+        let lvCount = 0;
+        let otherCount = 0;
+
         cart.forEach((item, index) => {
+          totalQty += item.quantity;
+          if (item.caption.toLowerCase().includes("louis vuitton")) {
+            lvCount += item.quantity;
+          } else {
+            otherCount += item.quantity;
+          }
+
           const displayTitle = item.caption || item.name;
           const li = document.createElement("li");
           li.className = "cart-item";
@@ -134,14 +160,9 @@
           cartItemsList.appendChild(li);
         });
 
-        updateTextPreview(cart);
-      }
-
-      function updateTextPreview(cart) {
-        if (previewTextarea) {
-          // 🛑 纯净无杂质的 编号/英文名*数量 导出格式，决不掺杂中文
-          previewTextarea.value = cart.map(i => `${i.sku || i.name}*${i.quantity}`).join("\n");
-        }
+        lvCountEl.textContent = lvCount;
+        otherCountEl.textContent = otherCount;
+        totalQtyEl.textContent = `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
       }
 
       window.updateQty = (index, change) => {
@@ -166,17 +187,44 @@
         renderCart();
       };
 
-      // 🛑 一键完美复制到剪贴板，彻底砍掉中文 Alert 弹窗提示
+      // 🟢 点击 COPY LIST，全自动在后台组合出你指定的纯正英文格式
       sendOrderBtn.onclick = () => {
-        if (previewTextarea && previewTextarea.value) {
-          navigator.clipboard.writeText(previewTextarea.value).then(() => {
-            showToastMessage();
-          }).catch(err => {
-            previewTextarea.select();
-            document.execCommand("copy");
-            showToastMessage();
-          });
-        }
+        const cart = loadCart();
+        if (cart.length === 0) return;
+
+        let totalQty = 0;
+        let lvCount = 0;
+        let otherCount = 0;
+
+        // 拼接头部
+        let outputText = `*Order Request List*\n`;
+        outputText += `------------------\n`;
+
+        // 拼接核心商品行 (格式: Axx - Name x 数量)
+        cart.forEach((item) => {
+          outputText += `${item.caption} x ${item.quantity}\n`;
+          totalQty += item.quantity;
+          if (item.caption.toLowerCase().includes("louis vuitton")) {
+            lvCount += item.quantity;
+          } else {
+            otherCount += item.quantity;
+          }
+        });
+
+        // 拼接尾部统计
+        outputText += `------------------\n`;
+        outputText += `LV: ${lvCount} | Other: ${otherCount}\n`;
+        outputText += `Total Items: ${totalQty}`;
+
+        // 复制到系统剪贴板
+        navigator.clipboard.writeText(outputText).then(() => {
+          showToastMessage();
+        }).catch(err => {
+          const t = document.createElement("textarea");
+          t.value = outputText; document.body.appendChild(t); t.select();
+          document.execCommand("copy"); document.body.removeChild(t);
+          showToastMessage();
+        });
       };
 
       function showToastMessage() {
