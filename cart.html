@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Your Cart</title>
+    <title>Selected Items</title>
     <link rel="icon" type="image/png" href="icon/32.png" />
     <link rel="apple-touch-icon" href="icon/180.png" />
     <style>
@@ -21,7 +21,7 @@
       .site-header {
         position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); background-color: #000; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       }
-      .header-left, .header-right { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 700; }
+      .header-left { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 700; }
       .header-title { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
 
       /* CONTAINER & CARDS */
@@ -62,14 +62,14 @@
         <span>◀ BACK</span>
       </div>
       <div class="header-title">SELECTED ITEMS</div>
-      <div class="header-right" style="opacity:0; pointer-events:none;"><span></span></div>
+      <div style="opacity:0; pointer-events:none;"><span></span></div>
     </header>
 
     <div id="capture-area">
       <ul id="cart-items-list" class="cart-items-list"></ul>
 
       <div id="preview-box" class="preview-section" style="display: none">
-        <div class="preview-title">📋 Order Content Preview:</div>
+        <div class="preview-title">📋 Summary Copy Column:</div>
         <textarea id="order-preview-text" readonly></textarea>
       </div>
     </div>
@@ -79,7 +79,6 @@
       <button id="send-order-btn" class="action-btn btn-order">Copy Order</button>
     </div>
 
-    <script src="db.js"></script>
     <script>
       const cartItemsList = document.getElementById("cart-items-list");
       const clearCartBtn = document.getElementById("clear-cart-btn");
@@ -135,13 +134,12 @@
           cartItemsList.appendChild(li);
         });
 
-        // 实时更新剪贴板文本框的内容
         updateTextPreview(cart);
       }
 
       function updateTextPreview(cart) {
         if (previewTextarea) {
-          // 🟢 只提取最无杂质、最干净的 编号/名字*数量 格式
+          // 🛑 纯净无杂质的 编号/英文名*数量 导出格式，决不掺杂中文
           previewTextarea.value = cart.map(i => `${i.sku || i.name}*${i.quantity}`).join("\n");
         }
       }
@@ -168,19 +166,31 @@
         renderCart();
       };
 
-      // 🟢 点击直接复制，不再发送消息
+      // 🛑 一键完美复制到剪贴板，彻底砍掉中文 Alert 弹窗提示
       sendOrderBtn.onclick = () => {
         if (previewTextarea && previewTextarea.value) {
           navigator.clipboard.writeText(previewTextarea.value).then(() => {
-            alert("Order copied to clipboard successfully! 📋");
+            showToastMessage();
           }).catch(err => {
-            // 兼容部分旧浏览器的硬拷贝兜底
             previewTextarea.select();
             document.execCommand("copy");
-            alert("Order copied! 📋");
+            showToastMessage();
           });
         }
       };
+
+      function showToastMessage() {
+        let toast = document.getElementById("custom-toast");
+        if (!toast) {
+          toast = document.createElement("div");
+          toast.id = "custom-toast";
+          toast.style.cssText = "position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:#fff; padding:10px 24px; border-radius:30px; font-size:0.9rem; z-index:9999; font-weight:600; transition:opacity 0.3s;";
+          document.body.appendChild(toast);
+        }
+        toast.textContent = "Copied to clipboard!";
+        toast.style.opacity = "1";
+        setTimeout(() => { toast.style.opacity = "0"; }, 1500);
+      }
 
       document.addEventListener("DOMContentLoaded", renderCart);
     </script>
