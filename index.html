@@ -224,7 +224,7 @@
       </div>
       <div class="nav-right">
         <button class="checkout-pill-btn" onclick="window.location.href = 'cart.html'">
-          CHECKOUT LIST
+          VIEW / COPY LIST
         </button>
       </div>
     </div>
@@ -254,7 +254,7 @@
       </div>
     </div>
 
-    <script src="db.js"></script>
+    <script src="db.js?v=2"></script>
     <script>
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTu1LHtseu7j_v40r9Sp2ZbqLZ3ZrlWexqVUjjQhouK6zZPxnBLwaCL9LAbawLIFI/exec";
 
@@ -321,16 +321,16 @@
       function renderSidebarBrands() { const list = document.getElementById("brand-list-container"); list.innerHTML = ""; FEATURED_BRANDS.forEach((brand) => { const div = document.createElement("div"); div.className = "brand-item"; div.textContent = brand === "Yves Saint Laurent" ? "YSL" : brand.toUpperCase(); div.onclick = () => scrollToBrand(brand); list.appendChild(div); }); }
       function generatePictureHTML(src, alt) { const webpSrc = src.replace(/\.(jpg|png|jpeg)$/i, ".webp"); return `<div class="img-wrapper skeleton-loader"><picture><source srcset="${webpSrc}" type="image/webp"><img src="${src}" alt="${alt}" loading="lazy" class="lazy-img" onload="this.classList.add('loaded'); this.parentElement.parentElement.classList.remove('skeleton-loader');" onerror="this.parentElement.parentElement.classList.remove('skeleton-loader');"></picture></div>`; }
       function getCartQty(id) { const item = cartItems.find((c) => c.name === id); return item ? item.quantity : 0; }
-      function getAddButtonHtml(id) { const qty = getCartQty(id); if (qty === 0) return `<button class="action-btn-black" onclick="updateItemQty('${id}', 1); event.stopPropagation();">ADD TO LIST</button>`; return `<div class="action-qty-box"><div class="qty-btn-rect" onclick="updateItemQty('${id}', -1); event.stopPropagation();">-</div><div class="qty-val-rect">${qty}</div><div class="qty-btn-rect" onclick="updateItemQty('${id}', 1); event.stopPropagation();">+</div></div>`; }
+      function getAddButtonHtml(id) { const qty = getCartQty(id); const product = window.perfumeDB.find((item) => item.id === id); if (qty === 0) return `<button class="action-btn-black" onclick="updateItemQty('${id}', 1); event.stopPropagation();">ADD TO LIST</button>`; return `<div class="action-qty-box"><div class="qty-btn-rect" onclick="updateItemQty('${id}', -1); event.stopPropagation();">-</div><div class="qty-val-rect">${qty}</div><div class="qty-btn-rect" onclick="updateItemQty('${id}', 1); event.stopPropagation();" ${qty >= Number(product?.stock) ? 'style="opacity:.45;pointer-events:none"' : ''}>+</div></div>`; }
 
       function renderHome() {
-        const db = (window.perfumeDB || []).filter((p) => parseInt(p.stock) > 0);
+        const db = window.perfumeDB || [];
         const container = document.getElementById("home-content"); if (!container) return; container.innerHTML = "";
         const renderSection = (title, items, filterKey) => { const section = createBrandSection(title, items, filterKey); if (filterKey && !["BestSellers", "New", "Sale"].includes(filterKey)) section.id = "brand-" + filterKey.replace(/\s+/g, ""); container.appendChild(section); };
 
-        const bestSellers = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(a.top) - Number(b.top));
+        const bestSellers = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(b.top) - Number(a.top));
         if (bestSellers.length > 0) renderSection("🔥 Best Sellers", bestSellers, "BestSellers");
-        const newArrivals = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(a.new) - Number(b.new));
+        const newArrivals = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(b.new) - Number(a.new));
         if (newArrivals.length > 0) renderSection("🆕 New Arrivals", newArrivals, "New");
 
         const renderedBrands = new Set();
@@ -360,56 +360,38 @@
         leftBtn.onclick = () => wrapper.scrollBy({ left: -200, behavior: "smooth" }); rightBtn.onclick = () => wrapper.scrollBy({ left: 200, behavior: "smooth" }); wrapper.addEventListener("scroll", updateControls); setTimeout(updateControls, 100); return section;
       }
 
-      // --- 💡 核心改良：多行复杂订单全量解析与智能容错加购引擎 ---
+      // Import the same official warehouse SKUs used in the copied list.
       function handleOrderPaste(text) {
-        const db = window.perfumeDB || []; if (db.length === 0) return;
-        const lines = text.split("\n"); let importedCount = 0; let tempCart = [...cartItems]; let notFoundList = [];
-
-        lines.forEach((line) => {
-          if (!line.trim()) return;
-          // 1. 严格规则：寻找带数量后缀的 (如 A03 x *1*)
-          const lineRegex = /^\s*[-*•]?\s*([A-Za-z0-9]+).*[xX×]\s*[*]?\(?(\d+)/i;
-          const match = line.match(lineRegex);
-          let id = ""; let qty = 1;
-
-          if (match) {
-            id = match[1].trim(); qty = parseInt(match[2], 10);
-          } else {
-            // 2. 智能容错保底：哪怕粗心没有输入数量，只要开头是 A129、A03 这种字母+数字组合，也强行抓取！
-            const fallbackRegex = /^\s*[-*•]?\s*([A-Za-z]\d+)/i;
-            const fallbackMatch = line.match(fallbackRegex);
-            if (fallbackMatch) { id = fallbackMatch[1].trim(); qty = 1; }
-          }
-
-          if (id) {
-            const product = db.find((p) => p.id.toLowerCase() === id.toLowerCase());
-            if (product) {
-              let existing = tempCart.find((c) => c.name.toLowerCase() === product.id.toLowerCase());
-              if (existing) { existing.quantity += qty; } 
-              else {
-                let sizeLabel = product.ml ? (isNaN(Number(product.ml)) ? `(${product.ml})` : `(${product.ml}ml)`) : "";
-                tempCart.push({ name: product.id, caption: `${product.id} - ${product.name} ${sizeLabel}`, img: product.img, brand: product.brand, ml: product.ml, quantity: qty, sku: product.sku });
-              }
-              importedCount += qty;
-            } else { notFoundList.push(id); }
-          }
+        const db = window.perfumeDB || [];
+        if (!db.length) return;
+        let importedCount = 0;
+        const notFound = [];
+        text.split(/[+\n,\r]/).forEach((part) => {
+          const match = part.trim().match(/^((?:IL|TX)-[A-Z0-9-]+)\s*(?:\*|[xX×])\s*(\d+)$/i);
+          if (!match) return;
+          const sku = match[1].toUpperCase();
+          const product = db.find((item) => item.id === sku);
+          if (!product) { notFound.push(sku); return; }
+          const existing = cartItems.find((item) => item.name === sku);
+          const quantity = Math.min(Number(match[2]), product.stock - (existing?.quantity || 0));
+          if (quantity <= 0) return;
+          if (existing) existing.quantity += quantity;
+          else cartItems.push({ name: sku, caption: `${sku} - ${product.name}`, img: product.img, brand: product.brand, ml: product.ml, warehouse: product.warehouse, quantity });
+          importedCount += quantity;
         });
-
-        if (importedCount > 0) {
-          cartItems = tempCart; saveCart(); updateWholesaleBanner();
-          document.querySelectorAll(`[data-btn-wrap]`).forEach((wrap) => { const cid = wrap.getAttribute("data-btn-wrap"); wrap.innerHTML = getAddButtonHtml(cid); });
-          let alertMsg = `✅ Success! Automatically parsed and loaded ${importedCount} items into your cart list.`;
-          if (notFoundList.length > 0) alertMsg += `\n\n⚠️ Could not find IDs: ${[...new Set(notFoundList)].join(", ")}`;
-          alert(alertMsg); document.getElementById("global-search-input").value = ""; if (viewMode === "home") renderHome(); else renderGridPage();
-        }
+        if (!importedCount) return;
+        saveCart(); updateWholesaleBanner();
+        document.getElementById("global-search-input").value = "";
+        if (viewMode === "home") renderHome(); else renderGridPage();
+        showToast(`Added ${importedCount} item${importedCount === 1 ? "" : "s"} to your list.`);
+        if (notFound.length) alert(`Unavailable SKUs: ${[...new Set(notFound)].join(", ")}`);
       }
 
       function setupSearch() {
         const globalSearch = document.getElementById("global-search-input");
         globalSearch.addEventListener("change", (e) => {
           const val = e.target.value.trim(); if (!val) return;
-          // 💡 智能雷达：只要检测到输入的内容包含换行、或者带有数量星号/乘号，就直接启动多行大单解析器，否则作为普通搜索
-          if (val.includes("\n") || val.includes("*") || val.includes("x") || val.includes("X")) {
+          if (/\b(?:IL|TX)-[A-Z0-9-]+\s*(?:\*|[xX×])\s*\d+/i.test(val)) {
             handleOrderPaste(val);
           } else { switchToGrid("Search:" + val); }
         });
@@ -418,10 +400,10 @@
       function calculateRelevanceScore(product, searchTokens) { let score = 0; const pId = (product.id || "").toString().toLowerCase(); const pName = (product.name || "").toLowerCase(); const pBrand = (product.brand || "").toLowerCase(); searchTokens.forEach((token) => { if (token.length < 1) return; if (pId.includes(token)) score += 100; if (pBrand.includes(token)) score += 60; if (pName.includes(token)) score += 50; }); return score; }
       function switchToGrid(criteria) {
         viewMode = "grid"; document.getElementById("home-view").style.display = "none"; document.getElementById("grid-view").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" });
-        const db = (window.perfumeDB || []).filter((p) => parseInt(p.stock) > 0); let filtered = []; let title = "";
+        const db = window.perfumeDB || []; let filtered = []; let title = "";
         if (criteria === "All") { filtered = db; title = "All Products"; } 
-        else if (criteria === "BestSellers") { filtered = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(a.top) - Number(b.top)); title = "Best Sellers"; } 
-        else if (criteria === "New") { filtered = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(a.new) - Number(b.new)); title = "New Arrivals"; } 
+        else if (criteria === "BestSellers") { filtered = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(b.top) - Number(a.top)); title = "Best Sellers"; }
+        else if (criteria === "New") { filtered = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(b.new) - Number(a.new)); title = "New Arrivals"; }
         else if (criteria.startsWith("Gender:")) { const tg = criteria.split(":")[1]; filtered = db.filter((p) => p.gender && getGenderClass(p.gender) === tg.toLowerCase()); title = tg === "Women" ? "For Her" : tg === "Men" ? "For Him" : "Unisex Collection"; } 
         else if (criteria.startsWith("Search:")) { const rt = criteria.replace("Search:", "").trim(); const tokens = rt.toLowerCase().split(/\s+/); let scored = db.map((p) => ({ product: p, score: calculateRelevanceScore(p, tokens) })).filter((item) => item.score > 0); scored.sort((a, b) => b.score - a.score); filtered = scored.map((item) => item.product); title = `Results for: "${rt}"`; } 
         else { filtered = db.filter((p) => p.brand === criteria); title = criteria; }
@@ -451,9 +433,13 @@
       window.updateItemQty = function (id, delta) {
         const product = window.perfumeDB.find((p) => p.id === id); if (!product) return;
         let existing = cartItems.find((c) => c.name === id);
+        if (delta > 0 && getCartQty(id) >= product.stock) {
+          showToast(`Only ${product.stock} available in ${product.warehouse} Warehouse.`);
+          return;
+        }
         if (!existing && delta > 0) {
           let sizeLabel = product.ml ? (isNaN(Number(product.ml)) ? `(${product.ml})` : `(${product.ml}ml)`) : "";
-          cartItems.push({ name: id, caption: `${id} - ${product.name} ${sizeLabel}`, img: product.img, brand: product.brand, ml: product.ml, quantity: 1, sku: product.sku });
+          cartItems.push({ name: id, caption: `${id} - ${product.name} ${sizeLabel}`, img: product.img, brand: product.brand, ml: product.ml, warehouse: product.warehouse, quantity: 1 });
           showToast("Added to List! 🛒");
         } else if (existing) {
           existing.quantity += delta; if (existing.quantity <= 0) cartItems = cartItems.filter((c) => c.name !== id);
@@ -465,8 +451,8 @@
       };
 
       function updateModalButtonState(id) { document.getElementById("modal-action-area").innerHTML = getAddButtonHtml(id); }
-      function loadCart() { cartItems = JSON.parse(localStorage.getItem("perfumeCart") || "[]"); updateWholesaleBanner(); }
-      function saveCart() { localStorage.setItem("perfumeCart", JSON.stringify(cartItems)); }
+      function loadCart() { cartItems = readFastCart(); updateWholesaleBanner(); }
+      function saveCart() { writeFastCart(cartItems); }
       function setupModalBackdropClosing() { document.querySelectorAll(".modal").forEach((o) => o.addEventListener("click", (e) => { if (e.target === o) { o.classList.remove("open"); currentModalProductId = null; } })); }
     </script>
   </body>

@@ -46,6 +46,7 @@
       .cart-summary h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
       .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; color: #555; }
       .summary-total { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; font-weight: bold; font-size: 1.1rem; color: #000; }
+      .list-preview { width: 100%; min-height: 150px; margin-top: 15px; padding: 12px; resize: vertical; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; font: 0.9rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: #222; }
 
       /* FIXED ACTIONS BAR */
       .cart-actions { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); padding: 15px 20px 25px; display: flex; gap: 12px; border-top: 1px solid rgba(0,0,0,0.08); z-index: 100; }
@@ -83,6 +84,7 @@
           <span>Total Quantity</span>
           <span id="total-qty-display">0 items</span>
         </div>
+        <textarea id="list-preview" class="list-preview" readonly aria-label="List to copy"></textarea>
       </div>
     </div>
 
@@ -91,6 +93,7 @@
       <button id="send-order-btn" class="action-btn btn-order">Copy List</button>
     </div>
 
+    <script src="db.js?v=2"></script>
     <script>
       const cartItemsList = document.getElementById("cart-items-list");
       const clearCartBtn = document.getElementById("clear-cart-btn");
@@ -101,12 +104,39 @@
       const lvCountEl = document.getElementById("lv-count");
       const otherCountEl = document.getElementById("other-brands-count");
       const totalQtyEl = document.getElementById("total-qty-display");
+      const listPreview = document.getElementById("list-preview");
 
       function loadCart() {
-        return JSON.parse(localStorage.getItem("perfumeCart") || "[]");
+        return readFastCart();
       }
       function saveCart(cart) {
-        localStorage.setItem("perfumeCart", JSON.stringify(cart));
+        writeFastCart(cart);
+      }
+
+      function buildCopyList(cart) {
+        const groups = new Map();
+        let total = 0;
+        (Array.isArray(cart) ? cart : []).forEach((item) => {
+          const sku = String(item.name || "").trim().toUpperCase();
+          const match = sku.match(/^(IL|TX)-[A-Z0-9-]+$/);
+          const quantity = Math.floor(Number(item.quantity));
+          if (!match || !Number.isFinite(quantity) || quantity <= 0) return;
+          const warehouse = match[1];
+          if (!groups.has(warehouse)) groups.set(warehouse, []);
+          groups.get(warehouse).push(`${sku}*${quantity}`);
+          total += quantity;
+        });
+        if (!total) return "";
+        const lines = ["Order Request List", "------------------"];
+        ["IL", "TX"].forEach((warehouse) => {
+          const products = groups.get(warehouse);
+          if (!products?.length) return;
+          const warehouseTotal = products.reduce((sum, line) => sum + Number(line.split("*")[1]), 0);
+          lines.push(`${warehouse} Warehouse | ${warehouseTotal} ${warehouseTotal === 1 ? "item" : "items"}`);
+          lines.push(products.join("+"));
+        });
+        lines.push("------------------", `Total Items: ${total}`);
+        return lines.join("\n");
       }
 
       function renderCart() {
@@ -163,6 +193,7 @@
         lvCountEl.textContent = lvCount;
         otherCountEl.textContent = otherCount;
         totalQtyEl.textContent = `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
+        listPreview.value = buildCopyList(cart);
       }
 
       window.updateQty = (index, change) => {
@@ -183,47 +214,21 @@
       };
 
       clearCartBtn.onclick = () => {
-        localStorage.removeItem("perfumeCart");
+        clearFastCart();
         renderCart();
       };
 
-      // 🟢 点击 COPY LIST，全自动在后台组合出你指定的纯正英文格式
       sendOrderBtn.onclick = () => {
-        const cart = loadCart();
-        if (cart.length === 0) return;
-
-        let totalQty = 0;
-        let lvCount = 0;
-        let otherCount = 0;
-
-        // 拼接头部
-        let outputText = `*Order Request List*\n`;
-        outputText += `------------------\n`;
-
-        // 拼接核心商品行 (格式: Axx - Name x 数量)
-        cart.forEach((item) => {
-          outputText += `${item.caption} x ${item.quantity}\n`;
-          totalQty += item.quantity;
-          if (item.caption.toLowerCase().includes("louis vuitton")) {
-            lvCount += item.quantity;
-          } else {
-            otherCount += item.quantity;
-          }
-        });
-
-        // 拼接尾部统计
-        outputText += `------------------\n`;
-        outputText += `LV: ${lvCount} | Other: ${otherCount}\n`;
-        outputText += `Total Items: ${totalQty}`;
-
-        // 复制到系统剪贴板
+        const outputText = buildCopyList(loadCart());
+        if (!outputText) return;
         navigator.clipboard.writeText(outputText).then(() => {
           showToastMessage();
-        }).catch(err => {
+        }).catch(() => {
           const t = document.createElement("textarea");
           t.value = outputText; document.body.appendChild(t); t.select();
-          document.execCommand("copy"); document.body.removeChild(t);
-          showToastMessage();
+          const copied = document.execCommand("copy"); document.body.removeChild(t);
+          if (copied) showToastMessage();
+          else alert("Copy failed. Please select and copy the preview text.");
         });
       };
 
