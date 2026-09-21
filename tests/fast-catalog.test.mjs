@@ -69,6 +69,11 @@ test("brand categories include every stocked brand and merge case-only duplicate
   ]);
 });
 
+test("customer catalog does not expose order tracking controls or endpoint", () => {
+  const page = read("index.html");
+  assert.doesNotMatch(page, /tracking-modal|Track My Order|GOOGLE_SCRIPT_URL|performTracking/);
+});
+
 test("copy list groups warehouses and uses syntax accepted by the SKU paste parser", () => {
   const { sandbox } = loadDatabase();
   loadCartScript(sandbox);

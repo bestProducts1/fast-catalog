@@ -46,9 +46,6 @@
       }
       .header-search-input:focus { background: #fff; color: #000; border-color: #fff; }
 
-      .header-right { position: relative; cursor: pointer; display: flex; align-items: center; flex-shrink: 0; padding-right: 5px; gap: 6px; }
-      .track-text { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #fff; }
-
       /* ================= 3. Sidebar ================= */
       .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s; }
       .sidebar-overlay.active { opacity: 1; visibility: visible; }
@@ -176,10 +173,6 @@
       <div class="header-center">
         <input type="text" id="global-search-input" class="header-search-input" placeholder="Search product or Paste multi-line text order request here..." />
       </div>
-      <div class="header-right" onclick="openTrackingModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-        <span class="track-text">TRACK</span>
-      </div>
     </header>
 
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -196,7 +189,6 @@
           <a class="menu-link" onclick="handleMenuClick('BestSellers')">Best Sellers 🔥</a>
           <a class="menu-link" onclick="handleMenuClick('New')">New Arrivals 🆕</a>
           <a class="menu-link" href="cart.html">My Cart</a>
-          <a class="menu-link" onclick="openTrackingModal()" style="color:#000; border-top:1px solid #eee; margin-top:10px; padding-top:20px;">🚚 Track My Order</a>
         </nav>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;" />
         <details class="brand-filter" id="brand-filter">
@@ -260,62 +252,8 @@
       </div>
     </div>
 
-    <div id="tracking-modal" class="modal">
-      <div class="modal-content" style="max-width: 360px; text-align: center; padding: 25px">
-        <div class="modal-close" onclick="closeTrackingModal()">&times;</div>
-        <h3 style="margin: 0 0 10px 0; font-size: 1.2rem">TRACK YOUR ORDER</h3>
-        <input type="text" id="track-input" class="header-search-input" style="background:#fff; border:1px solid #ccc; color:#333; margin-bottom:15px; text-align:center;" placeholder="Enter name or phone number..." />
-        <button id="track-btn" class="action-btn-black" onclick="performTracking()">CHECK NOW</button>
-        <div id="track-result" style="margin-top: 20px; display: none; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;"></div>
-      </div>
-    </div>
-
     <script src="db.js?v=3"></script>
     <script>
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTu1LHtseu7j_v40r9Sp2ZbqLZ3ZrlWexqVUjjQhouK6zZPxnBLwaCL9LAbawLIFI/exec";
-
-      function openTrackingModal() {
-        document.getElementById("sidebar").classList.remove("active");
-        document.getElementById("sidebar-overlay").classList.remove("active");
-        document.getElementById("tracking-modal").classList.add("open");
-      }
-      function closeTrackingModal() {
-        document.getElementById("tracking-modal").classList.remove("open");
-        document.getElementById("track-result").style.display = "none";
-        document.getElementById("track-input").value = "";
-      }
-      function getTrackingUrl(carrier, num) {
-        if (!carrier) return "https://t.17track.net/en#nums=" + num;
-        let c = carrier.toLowerCase();
-        if (c.includes("ups")) return `https://www.ups.com/track?tracknum=${num}`;
-        if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${num}`;
-        if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${num}`;
-        return `https://t.17track.net/en#nums=${num}`;
-      }
-      function performTracking() {
-        const input = document.getElementById("track-input").value.trim();
-        const btn = document.getElementById("track-btn");
-        const resultDiv = document.getElementById("track-result");
-        if (!input) return alert("Please enter a name or phone number.");
-        btn.textContent = "SEARCHING..."; btn.disabled = true; resultDiv.style.display = "none";
-        fetch(`${GOOGLE_SCRIPT_URL}?q=${encodeURIComponent(input)}`)
-          .then((response) => response.json())
-          .then((data) => {
-            btn.textContent = "CHECK NOW"; btn.disabled = false; resultDiv.style.display = "block";
-            if (data.status === "success") {
-              let rawTracks = String(data.tracking).split(/[\n\s]+/);
-              let trackHtml = rawTracks.map((num) => {
-                if (num.length < 5) return "";
-                let trackLink = getTrackingUrl(data.carrier, num);
-                return `<div style="background:#fff; border:1px dashed #ccc; border-radius:4px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><div><span style="font-family:monospace; font-weight:bold; font-size:0.95rem; word-break:break-all;">${num}</span><br><a href="${trackLink}" target="_blank" style="font-size:0.75rem; color:#007bff; text-decoration:none; font-weight:bold;">🌐 TRACK</a></div><span onclick="navigator.clipboard.writeText('${num}').then(()=>showToast('Copied!'))" style="cursor:pointer; font-size:1.2rem; padding:5px;">📋</span></div>`;
-              }).join("");
-              resultDiv.innerHTML = `<div style="color:#28a745; font-weight:bold; font-size:1.1rem;">✅ Order Found!</div><div style="background:#eee; height:1px; margin:10px 0;"></div><div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#555; margin-bottom:10px;"><span>📅 ${data.order_date || "N/A"}</span><span>👤 <b>${data.customer_name}</b></span></div><div style="font-size:0.9rem; margin-bottom:8px;">Carrier: <b>${data.carrier}</b></div><div>${trackHtml}</div>`;
-            } else {
-              resultDiv.innerHTML = `<div style="color:#d9534f; font-weight:bold;">❌ Order Not Found</div>`;
-            }
-          }).catch(() => { btn.textContent = "CHECK NOW"; btn.disabled = false; alert("System Error."); });
-      }
-
       const FEATURED_BRANDS = ["Creed","Dior","Chanel","Tom Ford","Yves Saint Laurent","Louis Vuitton","Gucci","Carolina Herrera","Valentino","Maison Francis Kurkdjian","Parfums de Marly","Jean Paul Gaultier","Xerjoff","Bond No. 9","Initio","Paco Rabanne","Giorgio Armani","Burberry","Versace"];
       let cartItems = []; let currentPage = 1; const itemsPerPage = 20; let currentGridData = []; let viewMode = "home"; let currentModalProductId = null;
 
