@@ -5,9 +5,11 @@ warehouse sheet as the other sites, shows products with stock of at least 19,
 and does not display prices. The list is stored separately from the seller
 sites' shared cart.
 
-The menu's collapsible brand filter is generated from the currently available
-products in that same sheet. Customers can search all listed brands without
-adding another spreadsheet or filling the page with brand buttons.
+The homepage follows the main catalog's warehouse-first brand navigation:
+customers expand IL or TX, then choose any brand in that warehouse. The
+brands are generated from currently available products in the same sheet.
+The selection-list page follows the main catalog's card and summary layout,
+but keeps prices hidden and uses Copy List instead of WhatsApp checkout.
 
 Copy List produces plain text such as:
 

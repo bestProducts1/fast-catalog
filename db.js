@@ -99,7 +99,6 @@ function getBrandCategories(products) {
 }
 
 function runPageLogic() {
-  if (typeof renderSidebarBrands === "function") renderSidebarBrands();
   if (typeof renderHome === "function") renderHome();
   if (typeof renderGridPage === "function") renderGridPage();
   if (typeof renderCart === "function") renderCart();

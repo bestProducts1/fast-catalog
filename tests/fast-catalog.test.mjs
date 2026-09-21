@@ -74,6 +74,18 @@ test("customer catalog does not expose order tracking controls or endpoint", () 
   assert.doesNotMatch(page, /tracking-modal|Track My Order|GOOGLE_SCRIPT_URL|performTracking/);
 });
 
+test("warehouse-first homepage and price-free selection list keep catalog styling", () => {
+  const home = read("index.html");
+  const cart = read("cart.html");
+  assert.match(home, /id="warehouse-menu-container"/);
+  assert.match(home, /WarehouseBrand:/);
+  assert.match(home, /class="curated-shortcuts"/);
+  assert.match(cart, /class="warehouse-pill"/);
+  assert.match(cart, /summary-quantity-total/);
+  assert.match(cart, /Copy List/);
+  assert.doesNotMatch(cart, /subtotal-price|whatsappNumber|Volume Discount/);
+});
+
 test("copy list groups warehouses and uses syntax accepted by the SKU paste parser", () => {
   const { sandbox } = loadDatabase();
   loadCartScript(sandbox);

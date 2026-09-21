@@ -13,7 +13,7 @@
         --header-height: 60px;
         --total-top-spacing: 60px;
         --sidebar-width: 300px;
-        --accent-color: #000000;
+        --accent-color: #b28900;
         --bg-color: #f8f8f8;
         --font-main: "Helvetica Neue", Helvetica, Arial, sans-serif;
         --tag-hot: #d9534f;
@@ -56,20 +56,48 @@
       .sidebar-tab.active { background: #fff; color: #000; border-bottom: 2px solid var(--accent-color); margin-bottom: -2px; }
       .sidebar-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
       .menu-link { display: block; padding: 15px 0; font-size: 1rem; font-weight: 600; color: #333; border-bottom: 1px solid #eee; text-transform: uppercase; }
-      .brand-filter { border: 1px solid #e6e6e6; border-radius: 10px; background: #fafafa; overflow: hidden; }
-      .brand-filter summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 14px; color: #222; font-size: 0.88rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; list-style: none; }
-      .brand-filter summary::-webkit-details-marker { display: none; }
-      .brand-filter summary::after { content: "⌄"; font-size: 1.3rem; line-height: 0.7; transition: transform 0.2s ease; }
-      .brand-filter[open] summary::after { transform: rotate(180deg); }
-      .brand-count { margin-left: auto; color: #777; font-size: 0.76rem; font-weight: 500; letter-spacing: 0; }
-      .brand-filter-content { padding: 0 10px 10px; }
-      .brand-search { width: 100%; margin-bottom: 7px; padding: 10px 11px; border: 1px solid #ddd; border-radius: 7px; background: #fff; color: #222; font: inherit; font-size: 0.88rem; outline: none; }
-      .brand-search:focus { border-color: #222; }
-      .brand-list { display: flex; flex-direction: column; max-height: min(46vh, 410px); overflow-y: auto; }
-      .brand-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 10px 8px; text-align: left; font-size: 0.86rem; color: #444; cursor: pointer; border-bottom: 1px solid #ededed; }
-      .brand-item:hover, .brand-item:focus-visible { color: #000; background: #f0f0f0; }
-      .brand-item-count { color: #888; font-size: 0.76rem; flex-shrink: 0; }
-      .brand-empty { padding: 12px 8px; color: #777; font-size: 0.85rem; }
+
+      /* Match the catalog's warehouse-first brand navigation. */
+      .quick-guide { margin: 8px 10px; padding: 12px; background: #101010 linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent 42%); color: #fff; border: 1px solid rgba(255, 215, 0, 0.32); border-radius: 8px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16); }
+      .quick-guide-title { margin: 0 0 3px; font-size: 1.05rem; line-height: 1.15; font-weight: 800; }
+      .quick-guide-subtitle { margin: 0 0 10px; color: #f2d166; font-size: 0.82rem; font-weight: 700; line-height: 1.35; }
+      .curated-shortcuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0 2px; }
+      .curated-shortcut { min-height: 50px; padding: 10px 12px; border: 1px solid rgba(255, 215, 0, 0.42); border-radius: 8px; background: rgba(255, 255, 255, 0.08); color: #fff; cursor: pointer; font: inherit; font-size: 0.84rem; font-weight: 800; letter-spacing: 0.35px; text-align: left; transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
+      .curated-shortcut span { display: block; margin-top: 2px; color: rgba(255, 255, 255, 0.58); font-size: 0.68rem; font-weight: 600; letter-spacing: 0; }
+      .curated-shortcut:hover, .curated-shortcut:focus-visible { border-color: #ffd700; background: rgba(255, 215, 0, 0.14); transform: translateY(-1px); }
+      .quick-warehouse-heading { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 215, 0, 0.2); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      .quick-warehouse-heading h2 { margin: 0 0 9px; font-size: 0.82rem; font-weight: 800; color: #f2d166; text-transform: uppercase; letter-spacing: 0.5px; }
+      .quick-warehouse-heading span { margin-bottom: 9px; color: rgba(255, 255, 255, 0.66); font-size: 0.75rem; line-height: 1.3; text-align: right; }
+      .warehouse-navigation { display: grid; gap: 10px; }
+      .warehouse-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .warehouse-toggle { position: relative; width: 100%; min-height: 66px; padding: 11px 36px 11px 12px; border: 1px solid rgba(255, 215, 0, 0.42); border-radius: 8px; background: rgba(255, 255, 255, 0.96); color: #222; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; font: inherit; font-size: 1rem; font-weight: 800; letter-spacing: 0.4px; }
+      .warehouse-toggle-label { flex: 1; }
+      .warehouse-count { margin-top: 3px; color: #777; font-size: 0.75rem; font-weight: 700; letter-spacing: 0; }
+      .warehouse-toggle::after { content: "+"; position: absolute; top: 50%; right: 12px; transform: translateY(-50%); color: var(--accent-color); font-size: 1.3rem; font-weight: 400; }
+      .warehouse-toggle.active { border-color: #ffd700; background: #ffd700; }
+      .warehouse-toggle.active::after { content: "−"; color: #111; }
+      .warehouse-toggle.active .warehouse-count { color: #554500; }
+      .warehouse-brand-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px; border: 1px solid rgba(255, 215, 0, 0.42); border-radius: 8px; background: #fff; }
+      .warehouse-brand-item { width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid #ece7dc; border-radius: 6px; background: #fbfaf7; color: #555; cursor: pointer; text-align: left; font: inherit; font-size: 0.82rem; line-height: 1.2; }
+      .warehouse-brand-item:hover, .warehouse-brand-item:focus-visible { color: #000; background: #f8f5ed; font-weight: 700; }
+      .warehouse-brand-item.all-products { grid-column: 1 / -1; background: #fff8db; border-color: #ead58b; color: var(--accent-color); font-weight: 800; }
+      .warehouse-brand-more { display: none; grid-column: 1 / -1; width: 100%; min-height: 44px; margin-top: 4px; color: #7b6020; cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 800; text-align: center; }
+      .warehouse-empty { grid-column: 1 / -1; margin: 10px 4px 2px; color: #999; font-size: 0.82rem; }
+      @media (min-width: 520px) {
+        .quick-guide { max-width: 1180px; margin: 12px auto 14px; padding: 16px 20px 20px; }
+        .warehouse-tabs { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+        .warehouse-toggle { min-height: 54px; padding: 13px 16px; flex-direction: row; align-items: center; }
+        .warehouse-count { margin-top: 0; margin-right: 10px; }
+        .warehouse-toggle::after { position: static; transform: none; }
+        .warehouse-brand-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      }
+      @media (max-width: 519px) {
+        .quick-warehouse-heading { display: block; }
+        .quick-warehouse-heading span { display: block; margin-top: -4px; text-align: left; }
+        .warehouse-brand-item.mobile-extra-brand { display: none; }
+        .warehouse-brand-list.show-all-brands .warehouse-brand-item.mobile-extra-brand { display: block; }
+        .warehouse-brand-more { display: block; }
+      }
 
       /* ================= 4. NEW Floating Capsule Bottom Bar (No Price) ================= */
       .bottom-nav-bar {
@@ -186,23 +214,28 @@
           <a class="menu-link" onclick="handleMenuClick('Gender:Men')" style="color: #1565c0">For Him 👨</a>
           <a class="menu-link" onclick="handleMenuClick('Gender:Unisex')" style="color: #455a64">Unisex ⚤</a>
           <a class="menu-link" onclick="scrollToBrand('Set')" style="color: #6a1b9a">Gift Sets 🎁</a>
-          <a class="menu-link" onclick="handleMenuClick('BestSellers')">Best Sellers 🔥</a>
+          <a class="menu-link" onclick="handleMenuClick('BestSellers')">Hot Selling 🔥</a>
           <a class="menu-link" onclick="handleMenuClick('New')">New Arrivals 🆕</a>
+          <a class="menu-link" onclick="scrollToBrand('Other')">Other Brands</a>
           <a class="menu-link" href="cart.html">My Cart</a>
         </nav>
-        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;" />
-        <details class="brand-filter" id="brand-filter">
-          <summary>Browse Brands <span class="brand-count" id="brand-count"></span></summary>
-          <div class="brand-filter-content">
-            <input class="brand-search" id="brand-search" type="search" placeholder="Find a brand" aria-label="Find a brand" />
-            <div class="brand-list" id="brand-list-container"></div>
-          </div>
-        </details>
         <div style="height: 50px;"></div>
       </div>
     </div>
 
     <div id="home-view">
+      <section class="quick-guide" aria-label="Warehouse shopping">
+        <div class="quick-guide-copy">
+          <h1 class="quick-guide-title">Build Your Selection List</h1>
+          <p class="quick-guide-subtitle">Choose products, then copy your list when ready.</p>
+        </div>
+        <div class="curated-shortcuts" aria-label="Featured collections">
+          <button class="curated-shortcut" type="button" onclick="switchToGrid('BestSellers')">HOT SELLING<span>Ranked by the catalog</span></button>
+          <button class="curated-shortcut" type="button" onclick="switchToGrid('New')">NEW ARRIVALS<span>Newest priorities first</span></button>
+        </div>
+        <div class="quick-warehouse-heading"><h2>Shop by Warehouse</h2><span>Select a warehouse, then choose a brand</span></div>
+        <div class="warehouse-navigation" id="warehouse-menu-container" aria-label="Warehouses and brands"></div>
+      </section>
       <div id="home-content">
         <div class="loading-container" style="text-align:center; padding:100px 0;"><div class="loading-text">LOADING...</div></div>
       </div>
@@ -252,15 +285,21 @@
       </div>
     </div>
 
-    <script src="db.js?v=3"></script>
+    <script src="db.js?v=4"></script>
     <script>
       const FEATURED_BRANDS = ["Creed","Dior","Chanel","Tom Ford","Yves Saint Laurent","Louis Vuitton","Gucci","Carolina Herrera","Valentino","Maison Francis Kurkdjian","Parfums de Marly","Jean Paul Gaultier","Xerjoff","Bond No. 9","Initio","Paco Rabanne","Giorgio Armani","Burberry","Versace"];
       let cartItems = []; let currentPage = 1; const itemsPerPage = 20; let currentGridData = []; let viewMode = "home"; let currentModalProductId = null;
+      let activeWarehouseCode = "IL"; let expandedWarehouseCode = "";
+      const MOBILE_BRAND_LIMIT = 10;
 
       document.addEventListener("DOMContentLoaded", () => {
         loadCart(); setupMenu(); setupModalBackdropClosing(); setupSearch();
         const checkDataInterval = setInterval(() => {
-          if (window.perfumeDB && window.perfumeDB.length > 0) { clearInterval(checkDataInterval); renderHome(); }
+          if (window.perfumeDB && window.perfumeDB.length > 0) {
+            clearInterval(checkDataInterval);
+            const initialView = { "#all": "All", "#hot-selling": "BestSellers", "#new-arrivals": "New" }[window.location.hash];
+            if (initialView) switchToGrid(initialView); else renderHome();
+          }
         }, 50);
       });
 
@@ -271,44 +310,83 @@
       function updateBottomBarData(totalQty) { const badgeEl = document.getElementById("bottom-bar-badge"); if (badgeEl) { badgeEl.textContent = totalQty; badgeEl.style.display = totalQty > 0 ? "flex" : "none"; } }
       function formatSize(item) { if (!item.ml) return ""; return isNaN(Number(item.ml)) ? item.ml : `${item.ml}ml`; }
       function getGenderClass(genderText) { if (!genderText) return "unisex"; const g = genderText.toLowerCase(); if (g.includes("women") || g.includes("female")) return "women"; if (g.includes("men") || g.includes("male")) return "men"; return "unisex"; }
-      function renderSidebarBrands() {
-        const list = document.getElementById("brand-list-container");
-        if (!list) return;
-        const brands = getBrandCategories(window.perfumeDB || []);
-        const search = document.getElementById("brand-search");
-        document.getElementById("brand-count").textContent = brands.length ? `${brands.length} brands` : "";
-        const renderMatches = () => {
-          const query = search.value.trim().toLocaleLowerCase();
-          const matches = brands.filter(({ name }) => name.toLocaleLowerCase().includes(query));
-          list.replaceChildren();
-          if (!matches.length) { const empty = document.createElement("div"); empty.className = "brand-empty"; empty.textContent = "No matching brands"; list.appendChild(empty); return; }
-          matches.forEach(({ name, count }) => {
-            const button = document.createElement("button"); button.type = "button"; button.className = "brand-item";
-            const label = document.createElement("span"); label.textContent = name;
-            const number = document.createElement("span"); number.className = "brand-item-count"; number.textContent = count;
-            button.append(label, number); button.onclick = () => handleMenuClick(name);
-            list.appendChild(button);
+      function renderWarehouseMenu() {
+        const container = document.getElementById("warehouse-menu-container");
+        if (!container) return;
+        const products = window.perfumeDB || [];
+        container.replaceChildren();
+        if (!products.length) { const empty = document.createElement("p"); empty.className = "warehouse-empty"; empty.textContent = "Loading warehouse brands..."; container.appendChild(empty); return; }
+        const warehouses = ["IL", "TX"].filter((code) => products.some((product) => product.warehouse === code));
+        if (!warehouses.includes(activeWarehouseCode)) activeWarehouseCode = warehouses[0] || "";
+        const tabs = document.createElement("div"); tabs.className = "warehouse-tabs";
+        warehouses.forEach((code) => {
+          const count = products.filter((product) => product.warehouse === code).length;
+          const toggle = document.createElement("button"); toggle.type = "button";
+          toggle.className = `warehouse-toggle${expandedWarehouseCode === code ? " active" : ""}`;
+          toggle.innerHTML = `<span class="warehouse-toggle-label">${code} Warehouse</span><span class="warehouse-count">${count} items</span>`;
+          toggle.setAttribute("aria-label", `${code} Warehouse, ${count} products`);
+          toggle.setAttribute("aria-expanded", String(expandedWarehouseCode === code));
+          toggle.onclick = () => {
+            expandedWarehouseCode = expandedWarehouseCode === code ? "" : code;
+            if (expandedWarehouseCode) activeWarehouseCode = code;
+            renderHome();
+          };
+          tabs.appendChild(toggle);
+        });
+        container.appendChild(tabs);
+        if (!expandedWarehouseCode || !warehouses.includes(expandedWarehouseCode)) return;
+
+        const code = expandedWarehouseCode;
+        const brands = getBrandCategories(products.filter((product) => product.warehouse === code))
+          .sort((a, b) => {
+            const rank = (name) => { const index = FEATURED_BRANDS.findIndex((brand) => brand.toLocaleLowerCase() === name.toLocaleLowerCase()); return index < 0 ? Infinity : index; };
+            return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name, "en", { sensitivity: "base" });
           });
-        };
-        search.oninput = renderMatches;
-        renderMatches();
+        const brandList = document.createElement("div"); brandList.className = "warehouse-brand-list";
+        const allButton = document.createElement("button"); allButton.type = "button"; allButton.className = "warehouse-brand-item all-products";
+        allButton.textContent = `All ${code} products`; allButton.onclick = () => switchToGrid(`Warehouse:${code}`); brandList.appendChild(allButton);
+        brands.forEach(({ name }, index) => {
+          const button = document.createElement("button"); button.type = "button";
+          button.className = `warehouse-brand-item${index >= MOBILE_BRAND_LIMIT ? " mobile-extra-brand" : ""}`;
+          button.textContent = name;
+          button.onclick = () => switchToGrid(`WarehouseBrand:${code}:${encodeURIComponent(name)}`);
+          brandList.appendChild(button);
+        });
+        if (brands.length > MOBILE_BRAND_LIMIT) {
+          const more = document.createElement("button"); more.type = "button"; more.className = "warehouse-brand-more";
+          more.setAttribute("aria-expanded", "false"); more.textContent = `Show ${brands.length - MOBILE_BRAND_LIMIT} more brands`;
+          more.onclick = () => { const showAll = brandList.classList.toggle("show-all-brands"); more.setAttribute("aria-expanded", String(showAll)); more.textContent = showAll ? "Show fewer brands" : `Show ${brands.length - MOBILE_BRAND_LIMIT} more brands`; };
+          brandList.appendChild(more);
+        }
+        container.appendChild(brandList);
       }
       function generatePictureHTML(src, alt) { const webpSrc = src.replace(/\.(jpg|png|jpeg)$/i, ".webp"); return `<div class="img-wrapper skeleton-loader"><picture><source srcset="${webpSrc}" type="image/webp"><img src="${src}" alt="${alt}" loading="lazy" class="lazy-img" onload="this.classList.add('loaded'); this.parentElement.parentElement.classList.remove('skeleton-loader');" onerror="this.parentElement.parentElement.classList.remove('skeleton-loader');"></picture></div>`; }
       function getCartQty(id) { const item = cartItems.find((c) => c.name === id); return item ? item.quantity : 0; }
       function getAddButtonHtml(id) { const qty = getCartQty(id); const product = window.perfumeDB.find((item) => item.id === id); if (qty === 0) return `<button class="action-btn-black" onclick="updateItemQty('${id}', 1); event.stopPropagation();">ADD TO LIST</button>`; return `<div class="action-qty-box"><div class="qty-btn-rect" onclick="updateItemQty('${id}', -1); event.stopPropagation();">-</div><div class="qty-val-rect">${qty}</div><div class="qty-btn-rect" onclick="updateItemQty('${id}', 1); event.stopPropagation();" ${qty >= Number(product?.stock) ? 'style="opacity:.45;pointer-events:none"' : ''}>+</div></div>`; }
 
       function renderHome() {
-        const db = window.perfumeDB || [];
+        const allProducts = window.perfumeDB || [];
+        renderWarehouseMenu();
+        const db = allProducts.filter((product) => product.warehouse === activeWarehouseCode);
         const container = document.getElementById("home-content"); if (!container) return; container.innerHTML = "";
-        const renderSection = (title, items, filterKey) => { const section = createBrandSection(title, items, filterKey); if (filterKey && !["BestSellers", "New", "Sale"].includes(filterKey)) section.id = "brand-" + filterKey.replace(/\s+/g, ""); container.appendChild(section); };
+        const renderSection = (title, items, filterKey, sectionId) => { const section = createBrandSection(title, items, filterKey); if (sectionId) section.id = "brand-" + sectionId.replace(/\s+/g, ""); container.appendChild(section); };
 
-        const bestSellers = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(b.top) - Number(a.top));
-        if (bestSellers.length > 0) renderSection("🔥 Best Sellers", bestSellers, "BestSellers");
-        const newArrivals = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(b.new) - Number(a.new));
-        if (newArrivals.length > 0) renderSection("🆕 New Arrivals", newArrivals, "New");
+        const bestSellers = allProducts.filter((p) => Number(p.top) > 0).sort((a, b) => Number(b.top) - Number(a.top));
+        if (bestSellers.length > 0) renderSection("Hot Selling", bestSellers, "BestSellers");
+        const newArrivals = allProducts.filter((p) => Number(p.new) > 0).sort((a, b) => Number(b.new) - Number(a.new));
+        if (newArrivals.length > 0) renderSection("New Arrivals", newArrivals, "New");
 
         const renderedBrands = new Set();
-        FEATURED_BRANDS.forEach((brand) => { const products = db.filter((p) => p.brand.toLowerCase().includes(brand.toLowerCase())); if (products.length >= 3) { renderSection(brand === "Yves Saint Laurent" ? "YSL" : brand.toUpperCase(), products, brand); renderedBrands.add(brand); } });
+        FEATURED_BRANDS.forEach((brand) => {
+          const products = db.filter((p) => p.brand.toLocaleLowerCase() === brand.toLocaleLowerCase());
+          if (products.length < 3) return;
+          renderSection(brand === "Yves Saint Laurent" ? "YSL" : brand.toUpperCase(), products, `WarehouseBrand:${activeWarehouseCode}:${encodeURIComponent(brand)}`, brand);
+          renderedBrands.add(brand.toLocaleLowerCase());
+        });
+        const otherProducts = db.filter((p) => !renderedBrands.has(p.brand.toLocaleLowerCase()));
+        if (otherProducts.length) renderSection("Other Brands", otherProducts, `WarehouseOther:${activeWarehouseCode}`, "Other");
+        const giftSets = db.filter((p) => /\b(set|gift box)\b/i.test(p.name) || /30ml\s*x\s*4/i.test(p.ml));
+        if (giftSets.length) renderSection("🎁 Gift Sets", giftSets, `WarehouseSet:${activeWarehouseCode}`, "Set");
         const shopAllContainer = document.createElement("div"); shopAllContainer.className = "shop-all-section"; shopAllContainer.innerHTML = `<button class="shop-all-btn" onclick="handleMenuClick('All')">Shop All Products</button>`; container.appendChild(shopAllContainer);
       }
 
@@ -375,8 +453,18 @@
       function switchToGrid(criteria) {
         viewMode = "grid"; document.getElementById("home-view").style.display = "none"; document.getElementById("grid-view").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" });
         const db = window.perfumeDB || []; let filtered = []; let title = "";
-        if (criteria === "All") { filtered = db; title = "All Products"; } 
-        else if (criteria === "BestSellers") { filtered = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(b.top) - Number(a.top)); title = "Best Sellers"; }
+        if (criteria.startsWith("WarehouseBrand:")) { const [, code, ...brandParts] = criteria.split(":"); const brand = decodeURIComponent(brandParts.join(":")); filtered = db.filter((p) => p.warehouse === code && p.brand.toLocaleLowerCase() === brand.toLocaleLowerCase()); title = `${code} Warehouse · ${brand}`; }
+        else if (criteria.startsWith("WarehouseOther:")) {
+          const code = criteria.split(":")[1];
+          const warehouseProducts = db.filter((p) => p.warehouse === code);
+          const displayedBrands = new Set(FEATURED_BRANDS.filter((brand) => warehouseProducts.filter((p) => p.brand.toLocaleLowerCase() === brand.toLocaleLowerCase()).length >= 3).map((brand) => brand.toLocaleLowerCase()));
+          filtered = warehouseProducts.filter((p) => !displayedBrands.has(p.brand.toLocaleLowerCase()));
+          title = `${code} Warehouse · Other Brands`;
+        }
+        else if (criteria.startsWith("WarehouseSet:")) { const code = criteria.split(":")[1]; filtered = db.filter((p) => p.warehouse === code && (/\b(set|gift box)\b/i.test(p.name) || /30ml\s*x\s*4/i.test(p.ml))); title = `${code} Warehouse · Gift Sets`; }
+        else if (criteria.startsWith("Warehouse:")) { const code = criteria.split(":")[1]; filtered = db.filter((p) => p.warehouse === code); title = `${code} Warehouse Products`; }
+        else if (criteria === "All") { filtered = db; title = "All Products"; }
+        else if (criteria === "BestSellers") { filtered = db.filter((p) => Number(p.top) > 0).sort((a, b) => Number(b.top) - Number(a.top)); title = "Hot Selling"; }
         else if (criteria === "New") { filtered = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(b.new) - Number(a.new)); title = "New Arrivals"; }
         else if (criteria.startsWith("Gender:")) { const tg = criteria.split(":")[1]; filtered = db.filter((p) => p.gender && getGenderClass(p.gender) === tg.toLowerCase()); title = tg === "Women" ? "For Her" : tg === "Men" ? "For Him" : "Unisex Collection"; } 
         else if (criteria.startsWith("Search:")) { const rt = criteria.replace("Search:", "").trim(); const tokens = rt.toLowerCase().split(/\s+/); let scored = db.map((p) => ({ product: p, score: calculateRelevanceScore(p, tokens) })).filter((item) => item.score > 0); scored.sort((a, b) => b.score - a.score); filtered = scored.map((item) => item.product); title = `Results for: "${rt}"`; } 
@@ -400,7 +488,7 @@
       window.openModal = function (product) { currentModalProductId = product.id; document.getElementById("modal-img").src = product.img; document.getElementById("modal-title").textContent = `${product.id}-${product.name}`; const notesContent = product.Notes || product.notes; let notesHtml = ""; if (notesContent && notesContent.trim() !== "") notesHtml = `<div class="modal-notes-box"><span class="modal-notes-title">Fragrance Notes</span><span class="modal-notes-text">${notesContent}</span></div>`; const genderClass = getGenderClass(product.gender); document.getElementById("modal-sub").innerHTML = `<div style="font-size:1.1rem; color:#333; margin-bottom:5px;">${product.brand}</div><div style="margin-bottom:8px; font-size:0.85rem; color:#555; display:flex; align-items:center; justify-content:center;"><span class="gender-tag ${genderClass}" style="font-size:0.8rem; margin:0 5px 0 0;">${product.gender || "Unisex"}</span><span style="color:#ccc">|</span> <span style="margin-left:5px">${formatSize(product)}</span></div>${notesHtml}`; const stockEl = document.getElementById("modal-stock"); const stockVal = getStockHtml(product.inventory); if (stockVal) { stockEl.innerHTML = `<div style="color:#d9534f; font-weight:bold; font-size:0.95rem; border:1px solid #d9534f; display:inline-block; padding:3px 10px; border-radius:4px;">🔥 Fast Moving: Only ${product.inventory} Left!</div>`; stockEl.style.display = "block"; } else { stockEl.style.display = "none"; } updateModalButtonState(product.id); document.getElementById("modal").classList.add("open"); };
       window.openModalById = function (id) { const p = window.perfumeDB.find((x) => x.id === id); if (p) openModal(p); };
       window.handleMenuClick = function (action) { document.getElementById("sidebar").classList.remove("active"); document.getElementById("sidebar-overlay").classList.remove("active"); if (action === "Home") { viewMode = "home"; document.getElementById("home-view").style.display = "block"; document.getElementById("grid-view").style.display = "none"; window.scrollTo({ top: 0 }); } else switchToGrid(action); };
-      window.scrollToBrand = function (brandName) { if (viewMode !== "home") { document.getElementById("home-view").style.display = "block"; document.getElementById("grid-view").style.display = "none"; viewMode = "home"; } document.getElementById("sidebar").classList.remove("active"); document.getElementById("sidebar-overlay").classList.remove("active"); setTimeout(() => { const targetId = "brand-" + brandName.replace(/\s+/g, ""); const element = document.getElementById(targetId); if (element) { window.scrollTo({ top: element.getBoundingClientRect().top + window.pageYOffset - 65, behavior: "smooth" }); } else switchToGrid(brandName); }, 50); };
+      window.scrollToBrand = function (brandName) { if (viewMode !== "home") { document.getElementById("home-view").style.display = "block"; document.getElementById("grid-view").style.display = "none"; viewMode = "home"; } document.getElementById("sidebar").classList.remove("active"); document.getElementById("sidebar-overlay").classList.remove("active"); setTimeout(() => { const targetId = "brand-" + brandName.replace(/\s+/g, ""); const element = document.getElementById(targetId); if (element) { window.scrollTo({ top: element.getBoundingClientRect().top + window.pageYOffset - 65, behavior: "smooth" }); } else if (brandName === "Set") switchToGrid(`WarehouseSet:${activeWarehouseCode}`); else if (brandName === "Other") switchToGrid(`WarehouseOther:${activeWarehouseCode}`); else switchToGrid(brandName); }, 50); };
       function setupMenu() { const trigger = document.getElementById("menu-trigger"); const overlay = document.getElementById("sidebar-overlay"); const sidebar = document.getElementById("sidebar"); function toggle() { sidebar.classList.toggle("active"); overlay.classList.toggle("active"); } trigger.onclick = toggle; overlay.onclick = toggle; }
       function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2000); }
 
