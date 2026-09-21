@@ -85,7 +85,21 @@ function clearFastCart() {
   localStorage.removeItem(CART_STORAGE_KEY);
 }
 
+function getBrandCategories(products) {
+  const categories = new Map();
+  for (const product of products) {
+    const name = String(product.brand || "").trim();
+    if (!name) continue;
+    const key = name.toLocaleLowerCase();
+    const current = categories.get(key);
+    if (current) current.count += 1;
+    else categories.set(key, { name, count: 1 });
+  }
+  return [...categories.values()].sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
+}
+
 function runPageLogic() {
+  if (typeof renderSidebarBrands === "function") renderSidebarBrands();
   if (typeof renderHome === "function") renderHome();
   if (typeof renderGridPage === "function") renderGridPage();
   if (typeof renderCart === "function") renderCart();

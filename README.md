@@ -5,6 +5,10 @@ warehouse sheet as the other sites, shows products with stock of at least 19,
 and does not display prices. The list is stored separately from the seller
 sites' shared cart.
 
+The menu's collapsible brand filter is generated from the currently available
+products in that same sheet. Customers can search all listed brands without
+adding another spreadsheet or filling the page with brand buttons.
+
 Copy List produces plain text such as:
 
 ```text

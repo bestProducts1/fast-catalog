@@ -59,9 +59,20 @@
       .sidebar-tab.active { background: #fff; color: #000; border-bottom: 2px solid var(--accent-color); margin-bottom: -2px; }
       .sidebar-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
       .menu-link { display: block; padding: 15px 0; font-size: 1rem; font-weight: 600; color: #333; border-bottom: 1px solid #eee; text-transform: uppercase; }
-      .brand-list { display: flex; flex-direction: column; gap: 0; }
-      .brand-item { padding: 12px 5px; font-size: 0.95rem; color: #555; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
-      .brand-item:hover { color: #000; background: #f4f4f4; padding-left: 10px; font-weight: bold; }
+      .brand-filter { border: 1px solid #e6e6e6; border-radius: 10px; background: #fafafa; overflow: hidden; }
+      .brand-filter summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 14px; color: #222; font-size: 0.88rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; list-style: none; }
+      .brand-filter summary::-webkit-details-marker { display: none; }
+      .brand-filter summary::after { content: "⌄"; font-size: 1.3rem; line-height: 0.7; transition: transform 0.2s ease; }
+      .brand-filter[open] summary::after { transform: rotate(180deg); }
+      .brand-count { margin-left: auto; color: #777; font-size: 0.76rem; font-weight: 500; letter-spacing: 0; }
+      .brand-filter-content { padding: 0 10px 10px; }
+      .brand-search { width: 100%; margin-bottom: 7px; padding: 10px 11px; border: 1px solid #ddd; border-radius: 7px; background: #fff; color: #222; font: inherit; font-size: 0.88rem; outline: none; }
+      .brand-search:focus { border-color: #222; }
+      .brand-list { display: flex; flex-direction: column; max-height: min(46vh, 410px); overflow-y: auto; }
+      .brand-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 10px 8px; text-align: left; font-size: 0.86rem; color: #444; cursor: pointer; border-bottom: 1px solid #ededed; }
+      .brand-item:hover, .brand-item:focus-visible { color: #000; background: #f0f0f0; }
+      .brand-item-count { color: #888; font-size: 0.76rem; flex-shrink: 0; }
+      .brand-empty { padding: 12px 8px; color: #777; font-size: 0.85rem; }
 
       /* ================= 4. NEW Floating Capsule Bottom Bar (No Price) ================= */
       .bottom-nav-bar {
@@ -188,8 +199,13 @@
           <a class="menu-link" onclick="openTrackingModal()" style="color:#000; border-top:1px solid #eee; margin-top:10px; padding-top:20px;">🚚 Track My Order</a>
         </nav>
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;" />
-        <div style="font-weight:700; margin-bottom:15px; font-size:0.85rem; color:#999; letter-spacing:1px;">POPULAR BRANDS</div>
-        <div class="brand-list" id="brand-list-container"></div>
+        <details class="brand-filter" id="brand-filter">
+          <summary>Browse Brands <span class="brand-count" id="brand-count"></span></summary>
+          <div class="brand-filter-content">
+            <input class="brand-search" id="brand-search" type="search" placeholder="Find a brand" aria-label="Find a brand" />
+            <div class="brand-list" id="brand-list-container"></div>
+          </div>
+        </details>
         <div style="height: 50px;"></div>
       </div>
     </div>
@@ -301,11 +317,10 @@
       }
 
       const FEATURED_BRANDS = ["Creed","Dior","Chanel","Tom Ford","Yves Saint Laurent","Louis Vuitton","Gucci","Carolina Herrera","Valentino","Maison Francis Kurkdjian","Parfums de Marly","Jean Paul Gaultier","Xerjoff","Bond No. 9","Initio","Paco Rabanne","Giorgio Armani","Burberry","Versace"];
-      const FEATURED_BRANDS_LOWER = FEATURED_BRANDS.map((b) => b.toLowerCase());
       let cartItems = []; let currentPage = 1; const itemsPerPage = 20; let currentGridData = []; let viewMode = "home"; let currentModalProductId = null;
 
       document.addEventListener("DOMContentLoaded", () => {
-        loadCart(); setupMenu(); renderSidebarBrands(); setupModalBackdropClosing(); setupSearch();
+        loadCart(); setupMenu(); setupModalBackdropClosing(); setupSearch();
         const checkDataInterval = setInterval(() => {
           if (window.perfumeDB && window.perfumeDB.length > 0) { clearInterval(checkDataInterval); renderHome(); }
         }, 50);
@@ -318,7 +333,28 @@
       function updateBottomBarData(totalQty) { const badgeEl = document.getElementById("bottom-bar-badge"); if (badgeEl) { badgeEl.textContent = totalQty; badgeEl.style.display = totalQty > 0 ? "flex" : "none"; } }
       function formatSize(item) { if (!item.ml) return ""; return isNaN(Number(item.ml)) ? item.ml : `${item.ml}ml`; }
       function getGenderClass(genderText) { if (!genderText) return "unisex"; const g = genderText.toLowerCase(); if (g.includes("women") || g.includes("female")) return "women"; if (g.includes("men") || g.includes("male")) return "men"; return "unisex"; }
-      function renderSidebarBrands() { const list = document.getElementById("brand-list-container"); list.innerHTML = ""; FEATURED_BRANDS.forEach((brand) => { const div = document.createElement("div"); div.className = "brand-item"; div.textContent = brand === "Yves Saint Laurent" ? "YSL" : brand.toUpperCase(); div.onclick = () => scrollToBrand(brand); list.appendChild(div); }); }
+      function renderSidebarBrands() {
+        const list = document.getElementById("brand-list-container");
+        if (!list) return;
+        const brands = getBrandCategories(window.perfumeDB || []);
+        const search = document.getElementById("brand-search");
+        document.getElementById("brand-count").textContent = brands.length ? `${brands.length} brands` : "";
+        const renderMatches = () => {
+          const query = search.value.trim().toLocaleLowerCase();
+          const matches = brands.filter(({ name }) => name.toLocaleLowerCase().includes(query));
+          list.replaceChildren();
+          if (!matches.length) { const empty = document.createElement("div"); empty.className = "brand-empty"; empty.textContent = "No matching brands"; list.appendChild(empty); return; }
+          matches.forEach(({ name, count }) => {
+            const button = document.createElement("button"); button.type = "button"; button.className = "brand-item";
+            const label = document.createElement("span"); label.textContent = name;
+            const number = document.createElement("span"); number.className = "brand-item-count"; number.textContent = count;
+            button.append(label, number); button.onclick = () => handleMenuClick(name);
+            list.appendChild(button);
+          });
+        };
+        search.oninput = renderMatches;
+        renderMatches();
+      }
       function generatePictureHTML(src, alt) { const webpSrc = src.replace(/\.(jpg|png|jpeg)$/i, ".webp"); return `<div class="img-wrapper skeleton-loader"><picture><source srcset="${webpSrc}" type="image/webp"><img src="${src}" alt="${alt}" loading="lazy" class="lazy-img" onload="this.classList.add('loaded'); this.parentElement.parentElement.classList.remove('skeleton-loader');" onerror="this.parentElement.parentElement.classList.remove('skeleton-loader');"></picture></div>`; }
       function getCartQty(id) { const item = cartItems.find((c) => c.name === id); return item ? item.quantity : 0; }
       function getAddButtonHtml(id) { const qty = getCartQty(id); const product = window.perfumeDB.find((item) => item.id === id); if (qty === 0) return `<button class="action-btn-black" onclick="updateItemQty('${id}', 1); event.stopPropagation();">ADD TO LIST</button>`; return `<div class="action-qty-box"><div class="qty-btn-rect" onclick="updateItemQty('${id}', -1); event.stopPropagation();">-</div><div class="qty-val-rect">${qty}</div><div class="qty-btn-rect" onclick="updateItemQty('${id}', 1); event.stopPropagation();" ${qty >= Number(product?.stock) ? 'style="opacity:.45;pointer-events:none"' : ''}>+</div></div>`; }
@@ -406,7 +442,7 @@
         else if (criteria === "New") { filtered = db.filter((p) => Number(p.new) > 0).sort((a, b) => Number(b.new) - Number(a.new)); title = "New Arrivals"; }
         else if (criteria.startsWith("Gender:")) { const tg = criteria.split(":")[1]; filtered = db.filter((p) => p.gender && getGenderClass(p.gender) === tg.toLowerCase()); title = tg === "Women" ? "For Her" : tg === "Men" ? "For Him" : "Unisex Collection"; } 
         else if (criteria.startsWith("Search:")) { const rt = criteria.replace("Search:", "").trim(); const tokens = rt.toLowerCase().split(/\s+/); let scored = db.map((p) => ({ product: p, score: calculateRelevanceScore(p, tokens) })).filter((item) => item.score > 0); scored.sort((a, b) => b.score - a.score); filtered = scored.map((item) => item.product); title = `Results for: "${rt}"`; } 
-        else { filtered = db.filter((p) => p.brand === criteria); title = criteria; }
+        else { filtered = db.filter((p) => String(p.brand || "").trim().toLocaleLowerCase() === criteria.toLocaleLowerCase()); title = criteria; }
         document.getElementById("grid-title").textContent = title; currentGridData = filtered; currentPage = 1; renderGridPage();
       }
 

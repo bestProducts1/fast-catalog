@@ -56,6 +56,19 @@ test("customer list stays separate from the seller sites' shared cart", () => {
   assert.equal(JSON.parse(data.get("bestProducts1SharedCartV3"))[0].quantity, 5);
 });
 
+test("brand categories include every stocked brand and merge case-only duplicates", () => {
+  const { sandbox } = loadDatabase();
+  const categories = JSON.parse(JSON.stringify(sandbox.getBrandCategories([
+    { brand: " Dior " }, { brand: "dior" }, { brand: "Zoologist" },
+    { brand: "Acqua di Parma" }, { brand: "" },
+  ])));
+  assert.deepEqual(categories, [
+    { name: "Acqua di Parma", count: 1 },
+    { name: "Dior", count: 2 },
+    { name: "Zoologist", count: 1 },
+  ]);
+});
+
 test("copy list groups warehouses and uses syntax accepted by the SKU paste parser", () => {
   const { sandbox } = loadDatabase();
   loadCartScript(sandbox);
